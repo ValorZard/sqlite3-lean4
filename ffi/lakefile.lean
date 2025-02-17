@@ -12,9 +12,9 @@ lean_exe test where
 
 target ffi.o pkg : FilePath := do
   let oFile := pkg.buildDir / "c" / "ffi.o"
-  let srcJob ← inputTextFile <| pkg.dir / "c" / "ffi.cpp"
+  let srcJob ← inputTextFile <| pkg.dir / "c" / "ffi.c"
   let weakArgs := #["-I", (← getLeanIncludeDir).toString]
-  buildO oFile srcJob weakArgs #["-fPIC"] "clang++" getLeanTrace
+  buildO oFile srcJob weakArgs #["-fPIC"] "clang" getLeanTrace
 
 extern_lib libleanffi pkg := do
   let ffiO ← ffi.o.fetch
