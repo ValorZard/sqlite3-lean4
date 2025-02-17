@@ -20,8 +20,8 @@ instance : ToString Connection where
 
 inductive Result where
   | ok : Result
-  | rows : Cursor → Result
-  | error : String → Result
+  | rows (c : Cursor) : Result
+  | error (e : String) : Result
 
 @[extern "lean_sqlite_initialize"]
 private opaque initSqlite : IO Unit
@@ -31,7 +31,10 @@ builtin_initialize initSqlite
 private opaque openSqlite : String → IO RawConn
 
 @[extern "lean_sqlite_exec"]
-opaque execSqlite : @&RawConn → String → IO Result
+private opaque execSqlite : @&RawConn → String → IO Result
+
+@[extern "lean_sqlite_step"]
+private opaque stepSqlite : Cursor → IO (Option (Array String))
 
 def connect (s : String) : IO Connection := do
   let rawconn ← openSqlite s
@@ -39,5 +42,8 @@ def connect (s : String) : IO Connection := do
 
 def exec (c : Connection) (query : String) : IO Result :=
   execSqlite c.conn query
+
+def step (c : Cursor) : IO (Option (Array String)) :=
+  stepSqlite c
 
 end Sqlite

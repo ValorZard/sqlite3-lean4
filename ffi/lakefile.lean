@@ -9,6 +9,7 @@ lean_lib FFI
 @[default_target]
 lean_exe test where
   root := `Main
+  moreLinkArgs := #["-lsqlite3"]
 
 target ffi.o pkg : FilePath := do
   let oFile := pkg.buildDir / "c" / "ffi.o"
