@@ -129,6 +129,18 @@ lean_obj_res lean_sqlite_step(b_lean_obj_arg cursor_box) {
   return lean_io_result_mk_error(lean_mk_io_error_other_error(c, err));
 }
 
+lean_obj_res lean_sqlite_reset_cursor(b_lean_obj_arg cursor_box) {
+  cursor_t* cursor = unbox_cursor(cursor_box);
+
+  int c = sqlite3_reset(cursor->stmt);
+
+  if (c == SQLITE_OK)
+    return lean_io_result_mk_ok(lean_box(0));
+
+  lean_object *err = lean_mk_string(sqlite3_errmsg(sqlite3_db_handle(cursor->stmt)));
+  return lean_io_result_mk_error(lean_mk_io_error_other_error(c, err));
+}
+
 int callback(void *NotUsed, int argc, char **argv, char **azColName){
   int i;
   for(i=0; i<argc; i++){

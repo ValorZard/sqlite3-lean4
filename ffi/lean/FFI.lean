@@ -34,7 +34,10 @@ private opaque openSqlite : String → IO RawConn
 private opaque execSqlite : @&RawConn → String → IO Result
 
 @[extern "lean_sqlite_step"]
-private opaque stepSqlite : Cursor → IO (Option (Array String))
+private opaque stepSqlite : @&Cursor → IO (Option (Array String))
+
+@[extern "lean_sqlite_reset_cursor"]
+private opaque resetCursorSqlite : @&Cursor → IO Unit
 
 def connect (s : String) : IO Connection := do
   let rawconn ← openSqlite s
@@ -45,5 +48,8 @@ def exec (c : Connection) (query : String) : IO Result :=
 
 def step (c : Cursor) : IO (Option (Array String)) :=
   stepSqlite c
+
+def reset (c : Cursor) : IO Unit :=
+  resetCursorSqlite c
 
 end Sqlite
