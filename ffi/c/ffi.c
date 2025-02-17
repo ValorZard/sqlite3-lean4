@@ -11,7 +11,13 @@ lean_obj_res myLeanFun() {
   return lean_io_result_mk_ok(lean_box(0));
 }
 
+typedef struct {
+  sqlite3_stmt* stmt;
+  int cols;
+} cursor_t;
+
 lean_external_class* g_sqlite_object_external_class = NULL;
+lean_external_class* g_sqlite_cursor_external_class = NULL;
 
 void noop_foreach(void* mod, b_lean_obj_arg fn) {}
 
@@ -19,8 +25,16 @@ lean_object* box_connection(sqlite3 *conn) {
   return lean_alloc_external(g_sqlite_object_external_class, conn);
 }
 
-sqlite3* unbox_connection(lean_object *o) {
-  return (sqlite3*)lean_get_external_data(o);
+sqlite3* unbox_connection(lean_object* o) {
+  return (sqlite3*) lean_get_external_data(o);
+}
+
+lean_object* box_cursor(cursor_t* cursor) {
+  return lean_alloc_external(g_sqlite_cursor_external_class, cursor);
+}
+
+cursor_t* unbox_cursor(lean_object* o) {
+  return (cursor_t*) lean_get_external_data(o);
 }
 
 void connection_finalize(void* conn) {
@@ -29,9 +43,19 @@ void connection_finalize(void* conn) {
   sqlite3_close(conn);
 }
 
+void cursor_finalize(void* cursor_ptr) {
+  cursor_t* cursor = (cursor_t*) cursor_ptr;
+
+  if (!cursor->stmt) return;
+  sqlite3_finalize(cursor->stmt);
+
+  if (!cursor) return;
+  free(cursor);
+}
+
 lean_obj_res lean_sqlite_initialize() {
   g_sqlite_object_external_class = lean_register_external_class(connection_finalize, noop_foreach);
-
+  g_sqlite_cursor_external_class = lean_register_external_class(cursor_finalize, noop_foreach);
   return lean_io_result_mk_ok(lean_box(0));
 }
 
@@ -51,13 +75,27 @@ lean_obj_res lean_sqlite_open(b_lean_obj_arg path) {
   return lean_io_result_mk_error(lean_mk_io_error_other_error(c, err));
 }
 
-/* lean_obj_res lean_sqlite3_prepare(b_lean_obj_arg db, b_lean_obj_arg statement) {
-  const char* stmt_str = lean_string_cstr(statement);
+lean_obj_res lean_sqlite_exec(b_lean_obj_arg conn_box, b_lean_obj_arg query_str) {
+  sqlite3* conn = unbox_connection(conn_box);
+  const char* query = lean_string_cstr(query_str);
 
+  cursor_t* cursor = malloc(sizeof(cursor_t*));
 
+  int rc = sqlite3_prepare_v2(conn, query, -1, &cursor->stmt, NULL);
 
-  return lean_io_result_mk_ok(box());
-} */
+  if (rc != SQLITE_OK) {
+    lean_object *err = lean_mk_string(sqlite3_errmsg(conn));
+    free(cursor);
+    return lean_io_result_mk_error(lean_mk_io_error_other_error(rc, err));
+  }
+
+  cursor->cols = sqlite3_column_count(cursor->stmt);
+
+  if (cursor->cols == 0)
+    return lean_io_result_mk_ok(lean_box(0));
+
+  return lean_io_result_mk_ok(box_cursor(cursor));
+}
 
 int callback(void *NotUsed, int argc, char **argv, char **azColName){
   int i;
