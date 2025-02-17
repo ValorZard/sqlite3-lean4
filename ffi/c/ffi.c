@@ -94,7 +94,9 @@ lean_obj_res lean_sqlite_exec(b_lean_obj_arg conn_box, b_lean_obj_arg query_str)
   if (cursor->cols == 0)
     return lean_io_result_mk_ok(lean_box(0));
 
-  return lean_io_result_mk_ok(box_cursor(cursor));
+  lean_object *res = lean_alloc_ctor(1, 1, 0);
+  lean_ctor_set(res, 0, box_cursor(cursor));
+  return lean_io_result_mk_ok(res);
 }
 
 int callback(void *NotUsed, int argc, char **argv, char **azColName){
