@@ -1,15 +1,9 @@
-@[extern "myAdd"]
-opaque myAdd : UInt32 → UInt32 → UInt32
-
-@[extern "wasd"]
-opaque wasd : UInt32 → UInt32
-
-namespace Sqlite
+namespace Sqlite.FFI
 
 private opaque Nonempty : NonemptyType
 
-private def RawConn : Type := Sqlite.Nonempty.type
-def Cursor : Type := Sqlite.Nonempty.type
+private def RawConn : Type := Nonempty.type
+def Cursor : Type := Nonempty.type
 
 structure Connection where
   path : String
@@ -91,4 +85,4 @@ def getAllCols (c : Cursor) : IO (Array (Array String)) := do
   resetCursorSqlite c
   getAllCols' c Array.empty (colsCount c).toNat
 
-end Sqlite
+end Sqlite.FFI

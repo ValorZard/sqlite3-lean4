@@ -1,16 +1,6 @@
 #include <lean/lean.h>
 #include <sqlite3.h>
-#include <stdint.h>
 #include <stdio.h>
-
-uint32_t myAdd(uint32_t a, uint32_t b) {
-  printf("a = %d, b = %d\n", a, b);
-  return a + b;
-}
-
-lean_obj_res myLeanFun() {
-  return lean_io_result_mk_ok(lean_box(0));
-}
 
 typedef struct {
   sqlite3_stmt* stmt;
@@ -103,10 +93,7 @@ lean_obj_res lean_sqlite_exec(b_lean_obj_arg conn_box, b_lean_obj_arg query_str)
 lean_obj_res lean_sqlite_column_text(b_lean_obj_arg cursor_box, uint32_t col) {
   cursor_t* cursor = unbox_cursor(cursor_box);
 
-  printf("col: %d\n", col);
-
   const unsigned char* text = sqlite3_column_text(cursor->stmt, col);
-  printf("text: %s\n", text);
 
   lean_object* s = lean_mk_string((const char*) text);
 
@@ -115,7 +102,7 @@ lean_obj_res lean_sqlite_column_text(b_lean_obj_arg cursor_box, uint32_t col) {
 
 lean_obj_res lean_sqlite_column_int(b_lean_obj_arg cursor_box, uint32_t col) {
   cursor_t* cursor = unbox_cursor(cursor_box);
-  
+
   const int integer = sqlite3_column_int(cursor->stmt, col);
 
   return lean_io_result_mk_ok(lean_box(integer));
@@ -133,7 +120,7 @@ lean_obj_res lean_sqlite_step(b_lean_obj_arg cursor_box) {
   if (c == SQLITE_DONE) {
     return lean_io_result_mk_ok(lean_box(0));
   }
-  
+
   lean_object* err = lean_mk_string(sqlite3_errmsg(sqlite3_db_handle(cursor->stmt)));
   return lean_io_result_mk_error(lean_mk_io_error_other_error(c, err));
 }
@@ -183,41 +170,5 @@ lean_obj_res lean_sqlite_reset_cursor(b_lean_obj_arg cursor_box) {
 uint32_t lean_sqlite_count_columns_cursor(b_lean_obj_arg cursor_box) {
   cursor_t* cursor = unbox_cursor(cursor_box);
 
-  printf("%u - %d\n", cursor->cols, cursor->cols);
-
   return cursor->cols;
-}
-
-int callback(void *NotUsed, int argc, char **argv, char **azColName){
-  int i;
-  for(i=0; i<argc; i++){
-    printf("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
-  }
-  printf("\n");
-  return 0;
-}
-
-uint32_t wasd(uint32_t a) {
-  printf("hello world\n");
-
-  sqlite3 *db;
-  char *zErrMsg = 0;
-  int err;
-
-  err = sqlite3_open("test.sqlite3", &db);
-  if (err != SQLITE_OK) {
-    fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
-    sqlite3_close(db);
-    return(1);
-  }
-
-  err = sqlite3_exec(db, "select 1 = 1;", callback, 0, &zErrMsg);
-  if (err != SQLITE_OK) {
-    fprintf(stderr, "SQL error: %s\n", zErrMsg);
-    sqlite3_free(zErrMsg);
-  }
-
-  sqlite3_close(db);
-
-  return a;
 }
