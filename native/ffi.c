@@ -54,7 +54,7 @@ lean_obj_res lean_sqlite_open(b_lean_obj_arg path) {
   const char* path_str = lean_string_cstr(path);
   sqlite3* conn = malloc(sizeof(sqlite3*));
 
-  int c = sqlite3_open(path_str, &conn);
+  int c = sqlite3_open_v2(path_str, &conn, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
 
   if (c == SQLITE_OK)
     return lean_io_result_mk_ok(box_connection(conn));
