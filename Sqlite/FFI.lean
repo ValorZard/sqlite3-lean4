@@ -13,15 +13,10 @@ structure Cursor where
   columnText : UInt32 → IO String
   columnInt : UInt32 → IO Int
 
-inductive Result (t : Type) where
-  | ok : Result t
-  | rows (c : t) : Result t
-  | error (e : String) : Result t
-
 structure Connection where
   path : String
   conn : RawConn
-  exec : String → IO (Result Cursor)
+  exec : String → IO (Except String Cursor)
 
 instance : ToString Connection where
   toString (conn : Connection) := s!"Connection('{conn.path}')"
@@ -33,8 +28,8 @@ builtin_initialize sqliteInit
 @[extern "lean_sqlite_open"]
 private opaque sqliteOpen : String → IO RawConn
 
-@[extern "lean_sqlite_exec"]
-private opaque sqliteExec : @&RawConn → String → IO (Result RawCursor)
+@[extern "lean_sqlite_prepare"]
+private opaque sqlitePrepare : @&RawConn → String → IO (Except String RawCursor)
 
 @[extern "lean_sqlite_cursor_step"]
 private opaque cursorStep : @&RawCursor → IO Bool
@@ -51,21 +46,20 @@ private opaque cursorColumnText : @&RawCursor → UInt32 → IO String
 @[extern "lean_sqlite_cursor_column_int"]
 private opaque cursorColumnInt : @&RawCursor → UInt32 → IO Int
 
-def sqliteExecWrap (conn : RawConn) (query : String) : IO (Result Cursor) := do
-  pure $ match ← sqliteExec conn query with
-  | Result.rows c => Result.rows { cursor := c,
-                                   step := cursorStep c,
-                                   reset := cursorReset c,
-                                   columnsCount := cursorColumnsCount c,
-                                   columnText := cursorColumnText c,
-                                   columnInt := cursorColumnInt c }
-  | Result.ok => Result.ok
-  | Result.error e => Result.error e
+private def sqlitePrepareWrap (conn : RawConn) (query : String) : IO (Except String Cursor) := do
+  pure $ match ← sqlitePrepare conn query with
+  | Except.ok c => pure { cursor := c,
+                          step := cursorStep c,
+                          reset := cursorReset c,
+                          columnsCount := cursorColumnsCount c,
+                          columnText := cursorColumnText c,
+                          columnInt := cursorColumnInt c }
+  | Except.error e => Except.error e
 
 def connect (s : String) : IO Connection := do
   let rawconn ← sqliteOpen s
   pure { path := s,
          conn := rawconn,
-         exec := (sqliteExecWrap rawconn ·) }
+         exec := (sqlitePrepareWrap rawconn ·) }
 
 end Sqlite.FFI
