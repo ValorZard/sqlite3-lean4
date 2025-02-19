@@ -90,7 +90,7 @@ lean_obj_res lean_sqlite_exec(b_lean_obj_arg conn_box, b_lean_obj_arg query_str)
   return lean_io_result_mk_ok(res);
 }
 
-lean_obj_res lean_sqlite_column_text(b_lean_obj_arg cursor_box, uint32_t col) {
+lean_obj_res lean_sqlite_cursor_column_text(b_lean_obj_arg cursor_box, uint32_t col) {
   cursor_t* cursor = unbox_cursor(cursor_box);
 
   const unsigned char* text = sqlite3_column_text(cursor->stmt, col);
@@ -100,7 +100,7 @@ lean_obj_res lean_sqlite_column_text(b_lean_obj_arg cursor_box, uint32_t col) {
   return lean_io_result_mk_ok(s);
 }
 
-lean_obj_res lean_sqlite_column_int(b_lean_obj_arg cursor_box, uint32_t col) {
+lean_obj_res lean_sqlite_cursor_column_int(b_lean_obj_arg cursor_box, uint32_t col) {
   cursor_t* cursor = unbox_cursor(cursor_box);
 
   const int integer = sqlite3_column_int(cursor->stmt, col);
@@ -108,7 +108,7 @@ lean_obj_res lean_sqlite_column_int(b_lean_obj_arg cursor_box, uint32_t col) {
   return lean_io_result_mk_ok(lean_box(integer));
 }
 
-lean_obj_res lean_sqlite_step(b_lean_obj_arg cursor_box) {
+lean_obj_res lean_sqlite_cursor_step(b_lean_obj_arg cursor_box) {
   cursor_t* cursor = unbox_cursor(cursor_box);
 
   int c = sqlite3_step(cursor->stmt);
@@ -125,37 +125,7 @@ lean_obj_res lean_sqlite_step(b_lean_obj_arg cursor_box) {
   return lean_io_result_mk_error(lean_mk_io_error_other_error(c, err));
 }
 
-lean_obj_res lean_sqlite_step_row(b_lean_obj_arg cursor_box) {
-  cursor_t* cursor = unbox_cursor(cursor_box);
-
-  int c = sqlite3_step(cursor->stmt);
-
-  if (c == SQLITE_ROW) {
-    lean_object* row = lean_alloc_array(0, cursor->cols);
-
-    for (int i = 0; i < cursor->cols; i++) {
-      const unsigned char* text = sqlite3_column_text(cursor->stmt, i);
-      lean_object* s = lean_mk_string((const char*) text);
-
-      lean_array_push(row, s);
-    }
-
-    lean_object *some_row = lean_alloc_ctor(1, 1, 0);
-    lean_ctor_set(some_row, 0, row);
-
-    return lean_io_result_mk_ok(some_row);
-  }
-
-  if (c == SQLITE_DONE) {
-    lean_object* none_row = lean_alloc_ctor(0, 0, 0);
-    return lean_io_result_mk_ok(none_row);
-  }
-
-  lean_object* err = lean_mk_string(sqlite3_errmsg(sqlite3_db_handle(cursor->stmt)));
-  return lean_io_result_mk_error(lean_mk_io_error_other_error(c, err));
-}
-
-lean_obj_res lean_sqlite_reset_cursor(b_lean_obj_arg cursor_box) {
+lean_obj_res lean_sqlite_cursor_reset(b_lean_obj_arg cursor_box) {
   cursor_t* cursor = unbox_cursor(cursor_box);
 
   int c = sqlite3_reset(cursor->stmt);
@@ -167,7 +137,7 @@ lean_obj_res lean_sqlite_reset_cursor(b_lean_obj_arg cursor_box) {
   return lean_io_result_mk_error(lean_mk_io_error_other_error(c, err));
 }
 
-uint32_t lean_sqlite_count_columns_cursor(b_lean_obj_arg cursor_box) {
+uint32_t lean_sqlite_cursor_columns_count(b_lean_obj_arg cursor_box) {
   cursor_t* cursor = unbox_cursor(cursor_box);
 
   return cursor->cols;

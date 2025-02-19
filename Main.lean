@@ -9,24 +9,24 @@ def printUser (fuel : Nat) (cursor : Sqlite.FFI.Cursor) : IO Unit := do
   if fuel = 0 then
     pure ()
   else
-    match ← Sqlite.FFI.step cursor with
+    match ← cursor.step with
     | false => pure ()
     | true => do
-      println s!"id  : {← Sqlite.FFI.columnInt cursor 0}"
-      println s!"name: {← Sqlite.FFI.columnText cursor 1}"
+      println s!"id  : {← cursor.columnInt 0}"
+      println s!"name: {← cursor.columnText 1}"
       printUser (fuel - 1) cursor
 
 def main : IO Unit := do
   let conn ← Sqlite.FFI.connect "test.sqlite3"
-  match ← Sqlite.FFI.exec conn "select count(1) from users;" with
+  match ← conn.exec "select count(1) from users;" with
   | Sqlite.FFI.Result.rows c =>
-    println s!"{Sqlite.FFI.colsCount c}"
-    match ← Sqlite.FFI.step c with
+    println s!"{c.columnsCount}"
+    match ← c.step with
     | false => println "error"
     | true => println "step"
-    let count ← Sqlite.FFI.columnInt c 0
+    let count ← c.columnInt 0
     println s!"count: {count}"
-    match ← Sqlite.FFI.exec conn "select * from users;" with
+    match ← conn.exec "select * from users;" with
      | Sqlite.FFI.Result.error e => println e
      | Sqlite.FFI.Result.ok => println "ok"
      | Sqlite.FFI.Result.rows c =>
