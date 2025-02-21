@@ -6,14 +6,13 @@ typedef struct {
   sqlite3_stmt* stmt;
   uint32_t cols;
 } cursor_t;
-
-lean_external_class* g_sqlite_object_external_class = NULL;
+lean_external_class* g_sqlite_connection_external_class = NULL;
 lean_external_class* g_sqlite_cursor_external_class = NULL;
 
 void noop_foreach(void* mod, b_lean_obj_arg fn) {}
 
-lean_object* box_connection(sqlite3 *conn) {
-  return lean_alloc_external(g_sqlite_object_external_class, conn);
+lean_object* box_connection(sqlite3* conn) {
+  return lean_alloc_external(g_sqlite_connection_external_class, conn);
 }
 
 sqlite3* unbox_connection(lean_object* o) {
@@ -45,7 +44,7 @@ void cursor_finalize(void* cursor_ptr) {
 }
 
 lean_obj_res lean_sqlite_initialize() {
-  g_sqlite_object_external_class = lean_register_external_class(connection_finalize, noop_foreach);
+  g_sqlite_connection_external_class = lean_register_external_class(connection_finalize, noop_foreach);
   g_sqlite_cursor_external_class = lean_register_external_class(cursor_finalize, noop_foreach);
   return lean_io_result_mk_ok(lean_box(0));
 }
