@@ -170,7 +170,11 @@ lean_obj_res lean_sqlite_cursor_columns_count(b_lean_obj_arg cursor_box) {
   return lean_io_result_mk_ok(lean_box(c));
 }
 
+lean_obj_res lean_sqlite_threadsafe() {
+  const int threadsafe = sqlite3_threadsafe();
 
+  return lean_io_result_mk_ok(lean_box(threadsafe));
+}
 
 lean_obj_res lean_sqlite_config(int32_t config) {
   int c = sqlite3_config(config);

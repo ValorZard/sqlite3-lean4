@@ -111,6 +111,9 @@ private opaque cursorColumnText : @&RawCursor → UInt32 → IO String
 @[extern "lean_sqlite_cursor_column_int"]
 private opaque cursorColumnInt : @&RawCursor → UInt32 → IO Int
 
+@[extern "lean_sqlite_threadsafe"]
+opaque sqliteThreadsafe : IO Int
+
 @[extern "lean_sqlite_config"]
 opaque sqliteConfig : UInt32 → IO Unit
 
