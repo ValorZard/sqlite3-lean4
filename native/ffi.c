@@ -45,13 +45,13 @@ lean_obj_res lean_sqlite_initialize() {
   return lean_io_result_mk_ok(lean_box(0));
 }
 
-lean_obj_res lean_sqlite_open(b_lean_obj_arg path) {
+lean_obj_res lean_sqlite_open(b_lean_obj_arg path, uint32_t flags) {
   const char* path_str = lean_string_cstr(path);
   sqlite3* conn = malloc(sizeof(sqlite3*));
 
-  int32_t c = sqlite3_open_v2(path_str, &conn, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
   printf("initialize_connection: %x\n", conn);
 
+  int32_t c = sqlite3_open_v2(path_str, &conn, flags, NULL);
 
   if (c == SQLITE_OK)
     return lean_io_result_mk_ok(box_connection(conn));
