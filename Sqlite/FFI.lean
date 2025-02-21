@@ -71,6 +71,7 @@ structure Cursor where
   columnsCount : IO UInt32
   columnText : UInt32 → IO String
   columnInt : UInt32 → IO Int
+  cursorExplain : UInt32 → IO Int
 
 structure Connection where
   path : String
@@ -112,7 +113,10 @@ private opaque cursorColumnsCount : @&RawCursor → IO UInt32
 private opaque cursorColumnText : @&RawCursor → UInt32 → IO String
 
 @[extern "lean_sqlite_cursor_column_int"]
-private opaque cursorColumnInt : @&RawCursor → UInt32 → IO Int
+private opaque cursorColumnInt : @&RawCursor → UInt32 → IO Int32
+
+@[extern "lean_sqlite_cursor_explain"]
+private opaque cursorExplain : @&RawCursor → UInt32 → IO Int
 
 @[extern "lean_sqlite_threadsafe"]
 opaque sqliteThreadsafe : IO Int
@@ -129,7 +133,8 @@ private def sqlitePrepareWrap (conn : RawConn) (query : String) : IO (Except Str
                           reset := cursorReset c,
                           columnsCount := cursorColumnsCount c,
                           columnText := cursorColumnText c,
-                          columnInt := cursorColumnInt c }
+                          columnInt := cursorColumnInt c,
+                          cursorExplain := cursorExplain c, }
   | Except.error e => Except.error e
 
 def connect (s : String) (flags : UInt32) : IO Connection := do

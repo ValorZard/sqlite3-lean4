@@ -194,4 +194,11 @@ lean_obj_res lean_sqlite_config(int32_t config) {
 
   return lean_io_result_mk_ok(lean_box(0));
 }
+
+lean_obj_res lean_sqlite_cursor_explain(b_lean_obj_arg cursor_box, int32_t emode) {
+  sqlite3_stmt* cursor = unbox_cursor(cursor_box);
+
+  const int c = sqlite3_stmt_explain(cursor, emode);
+
+  return lean_io_result_mk_ok(lean_box(c));
 }
