@@ -11,7 +11,7 @@ structure Cursor where
   bindText : UInt32 → String → IO Unit
   bindInt : UInt32 → Int → IO Unit
   reset : IO Unit
-  columnsCount : UInt32
+  columnsCount : IO UInt32
   columnText : UInt32 → IO String
   columnInt : UInt32 → IO Int
 
@@ -46,7 +46,7 @@ private opaque cursorStep : @&RawCursor → IO Bool
 private opaque cursorReset : @&RawCursor → IO Unit
 
 @[extern "lean_sqlite_cursor_columns_count"]
-private opaque cursorColumnsCount : @&RawCursor → UInt32
+private opaque cursorColumnsCount : @&RawCursor → IO UInt32
 
 @[extern "lean_sqlite_cursor_column_text"]
 private opaque cursorColumnText : @&RawCursor → UInt32 → IO String
