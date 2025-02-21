@@ -115,6 +115,14 @@ lean_obj_res lean_sqlite_cursor_bind_int(b_lean_obj_arg cursor_box, uint32_t col
   return lean_io_result_mk_ok(lean_box(0));
 }
 
+lean_obj_res lean_sqlite_cursor_bind_parameter_name(b_lean_obj_arg cursor_box, int32_t value) {
+  sqlite3_stmt* cursor = unbox_cursor(cursor_box);
+
+  const char* name = sqlite3_bind_parameter_name(cursor, value);
+
+  return lean_io_result_mk_ok(lean_mk_string(name));
+}
+
 lean_obj_res lean_sqlite_cursor_column_text(b_lean_obj_arg cursor_box, uint32_t col) {
   sqlite3_stmt* cursor = unbox_cursor(cursor_box);
 

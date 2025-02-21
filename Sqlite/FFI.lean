@@ -94,7 +94,10 @@ private opaque sqlitePrepare : @&RawConn → String → IO (Except String RawCur
 private opaque cursorBindText : @&RawCursor → UInt32 → String → IO Unit
 
 @[extern "lean_sqlite_cursor_bind_int"]
-private opaque cursorBindInt : @&RawCursor → UInt32 → Int → IO Unit
+private opaque cursorBindInt : @&RawCursor → UInt32 → Int32 → IO Unit
+
+@[extern "lean_sqlite_cursor_bind_parameter_name"]
+private opaque cursorBindParameterName : @&RawCursor → Int32 → String → IO Unit
 
 @[extern "lean_sqlite_cursor_step"]
 private opaque cursorStep : @&RawCursor → IO Bool
