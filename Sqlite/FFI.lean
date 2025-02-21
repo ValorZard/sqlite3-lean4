@@ -1,6 +1,37 @@
 namespace Sqlite.FFI
 namespace Constants
 
+def SQLITE_CONFIG_SINGLETHREAD        : UInt32 := 1
+def SQLITE_CONFIG_MULTITHREAD         : UInt32 := 2
+def SQLITE_CONFIG_SERIALIZED          : UInt32 := 3
+def SQLITE_CONFIG_MALLOC              : UInt32 := 4
+def SQLITE_CONFIG_GETMALLOC           : UInt32 := 5
+def SQLITE_CONFIG_SCRATCH             : UInt32 := 6
+def SQLITE_CONFIG_PAGECACHE           : UInt32 := 7
+def SQLITE_CONFIG_HEAP                : UInt32 := 8
+def SQLITE_CONFIG_MEMSTATUS           : UInt32 := 9
+def SQLITE_CONFIG_MUTEX               : UInt32 := 10
+def SQLITE_CONFIG_GETMUTEX            : UInt32 := 11
+-- /* previously SQLITE_CONFIG_CHUNKALLOC    12 which is now unused. */
+def SQLITE_CONFIG_LOOKASIDE           : UInt32 := 13
+def SQLITE_CONFIG_PCACHE              : UInt32 := 14
+def SQLITE_CONFIG_GETPCACHE           : UInt32 := 15
+def SQLITE_CONFIG_LOG                 : UInt32 := 16
+def SQLITE_CONFIG_URI                 : UInt32 := 17
+def SQLITE_CONFIG_PCACHE2             : UInt32 := 18
+def SQLITE_CONFIG_GETPCACHE2          : UInt32 := 19
+def SQLITE_CONFIG_COVERING_INDEX_SCAN : UInt32 := 20
+def SQLITE_CONFIG_SQLLOG              : UInt32 := 21
+def SQLITE_CONFIG_MMAP_SIZE           : UInt32 := 22
+def SQLITE_CONFIG_WIN32_HEAPSIZE      : UInt32 := 23
+def SQLITE_CONFIG_PCACHE_HDRSZ        : UInt32 := 24
+def SQLITE_CONFIG_PMASZ               : UInt32 := 25
+def SQLITE_CONFIG_STMTJRNL_SPILL      : UInt32 := 26
+def SQLITE_CONFIG_SMALL_MALLOC        : UInt32 := 27
+def SQLITE_CONFIG_SORTERREF_SIZE      : UInt32 := 28
+def SQLITE_CONFIG_MEMDB_MAXSIZE       : UInt32 := 29
+def SQLITE_CONFIG_ROWID_IN_VIEW       : UInt32 := 30
+
 def SQLITE_OPEN_READONLY      : UInt32 := 1
 def SQLITE_OPEN_READWRITE     : UInt32 := 2
 def SQLITE_OPEN_CREATE        : UInt32 := 4
@@ -79,6 +110,9 @@ private opaque cursorColumnText : @&RawCursor → UInt32 → IO String
 
 @[extern "lean_sqlite_cursor_column_int"]
 private opaque cursorColumnInt : @&RawCursor → UInt32 → IO Int
+
+@[extern "lean_sqlite_config"]
+opaque sqliteConfig : UInt32 → IO Unit
 
 private def sqlitePrepareWrap (conn : RawConn) (query : String) : IO (Except String Cursor) := do
   pure $ match ← sqlitePrepare conn query with

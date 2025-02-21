@@ -171,4 +171,15 @@ lean_obj_res lean_sqlite_cursor_columns_count(b_lean_obj_arg cursor_box) {
 }
 
 
+
+lean_obj_res lean_sqlite_config(int32_t config) {
+  int c = sqlite3_config(config);
+
+  if (c != SQLITE_OK) {
+    lean_object* err = lean_mk_string("Error sqlite");
+    return lean_io_result_mk_error(lean_mk_io_error_other_error(c, err));
+  }
+
+  return lean_io_result_mk_ok(lean_box(0));
+}
 }
