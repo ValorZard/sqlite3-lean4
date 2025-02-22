@@ -5,9 +5,7 @@ open LSpec
 open Sqlite.FFI
 open Sqlite.FFI.Constants
 
-def assert := (· = true)
-
-instance : Testable (assert b) :=
+instance (b : Bool) : Testable b :=
   if h : b = true then
     .isTrue h
   else
@@ -95,17 +93,10 @@ def testNonExistentTable (ctx : TestContext) : IO Bool := do
   | Except.ok _ => pure false
 
 def main := do
-  let insertData ← (withTest testInsertData)
-  let selectData ← (withTest testSelectData)
-  let parameterBinding ← (withTest testParameterBinding)
-  let columnCount ← (withTest testColumnCount)
-  let invalidSyntax ← (withTest testInvalidSyntax)
-  let nonExistentTable ← (withTest testNonExistentTable)
-
   lspecIO $
-    test "can insert data" (assert insertData) $
-    test "can select data" (assert selectData) $
-    test "can bind parameters" (assert parameterBinding) $
-    test "can get column count" (assert columnCount) $
-    test "handles invalid SQL syntax" (assert invalidSyntax) $
-    test "handles non-existent table" (assert nonExistentTable)
+    test "can insert data" (← withTest testInsertData) $
+    test "can select data" (← withTest testSelectData) $
+    test "can bind parameters" (← withTest testParameterBinding) $
+    test "can get column count" (← withTest testColumnCount) $
+    test "handles invalid SQL syntax" (← withTest testInvalidSyntax) $
+    test "handles non-existent table" (← withTest testNonExistentTable)
