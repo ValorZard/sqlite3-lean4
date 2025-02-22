@@ -16,6 +16,6 @@ jobs:
       - name: Install Lean
         run: nix-shell
       - name: Log versions
-        run: lean --version && lake --version
+        run: nix-shell --run "lean --version && lake --version"
       - name: run LSpec binary
-        run: lake exe lspec
+        run: nix-shell --run "lake exe lspec"
