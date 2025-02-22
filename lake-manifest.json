@@ -1,5 +1,15 @@
 {"version": "1.1.0",
  "packagesDir": ".lake/packages",
- "packages": [],
- "name": "ffi",
+ "packages":
+ [{"url": "https://github.com/argumentcomputer/lspec/",
+   "type": "git",
+   "subDir": null,
+   "scope": "",
+   "rev": "8a51034d049c6a229d88dd62f490778a377eec06",
+   "name": "LSpec",
+   "manifestFile": "lake-manifest.json",
+   "inputRev": "8a51034d049c6a229d88dd62f490778a377eec06",
+   "inherited": false,
+   "configFile": "lakefile.lean"}],
+ "name": "sqlite",
  "lakeDir": ".lake"}
