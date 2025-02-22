@@ -3,7 +3,7 @@ import LSpec
 open LSpec
 
 def fourIO : IO Nat :=
-  pure 4
+  pure 5
 
 def fiveIO : IO Nat :=
   pure 5
