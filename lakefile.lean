@@ -33,7 +33,7 @@ def copyBinaries (sourceDir : FilePath) : FetchM (Unit) := do
   let dstDir := ((<- getRootPackage).binDir)
   IO.FS.createDirAll dstDir
   logInfo s!"Copying binaries from {sourceDir} to {dstDir}"
-  let binariesDir : FilePath := sourceDir / "build"
+  let binariesDir : FilePath := sourceDir
   for entry in (← binariesDir.readDir) do
     if entry.path.extension != none then
       copyFile entry.path (dstDir / entry.path.fileName.get!)
@@ -42,30 +42,24 @@ def copyBinaries (sourceDir : FilePath) : FetchM (Unit) := do
 def buildSqlite (repoDir : FilePath) (args : Array String): FetchM (Unit) := do
   logInfo s!"Building {repoDir} with args {args}"
 
-  let buildDir := repoDir / "build"
-  let buildDirExists ← buildDir.pathExists
+  let configureBuild ← IO.Process.output {
+    cmd := repoDir.toString ++ "/configure",
+  }
 
-  if !buildDirExists then
-    IO.FS.createDirAll buildDir
-    let configureBuild ← IO.Process.output {
-      cmd := repoDir.toString ++ "/configure",
-    }
-
-    if configureBuild.exitCode != 0 then
-      logError s!"Error configuring build: {configureBuild.stderr}"
-      return ()
-    logInfo "Build configured successfully"
+  if configureBuild.exitCode != 0 then
+    logError s!"Error configuring build: {configureBuild.stderr}"
+    return ()
   else
-    logInfo "Build directory already exists, skipping configuration step"
+    logInfo "Build configured successfully"
 
   -- Builds the "sqlite3" command-line tool
-  let buildCommandLine ← IO.Process.output { cmd := "make", args := #["CC={compiler}","sqlite3"] }
+  let buildCommandLine ← IO.Process.output { cmd := "make", args := #[("CC=" ++ compiler), "sqlite3"] }
   if buildCommandLine.exitCode != 0 then
     logError s!"Error building project: {buildCommandLine.exitCode}"
     logError s!"Project build stderr: {buildCommandLine.stderr}"
     return ()
 
-  let buildLib ← IO.Process.output { cmd := "make", args := #["CC={compiler}","sqlite3.c"] }
+  let buildLib ← IO.Process.output { cmd := "make", args := #[("CC=" ++ compiler), "sqlite3.c"] }
   if buildLib.exitCode != 0 then
     logError s!"Error building project: {buildLib.exitCode}"
     logError s!"Project build stderr: {buildLib.stderr}"
@@ -76,10 +70,12 @@ def buildSqlite (repoDir : FilePath) (args : Array String): FetchM (Unit) := do
 target sqliteffi.o pkg : FilePath := do
   let oFile := pkg.buildDir / "native" / "sqliteffi.o"
   let srcJob ← inputTextFile <| pkg.dir / "native" / "ffi.c"
-  let weakArgs := #["-I", (← getLeanIncludeDir).toString, "-I/nix/store/8r55amvr43sm771rgm0sszd05rm8j1cr-sqlite-3.46.0-dev/include/"]
-  buildO oFile srcJob weakArgs #["-fPIC"] "clang" getLeanTrace
+  -- Use Lean include dir; avoid hardcoded Nix paths which don't exist on Windows
+  let weakArgs := #["-I", (← getLeanIncludeDir).toString]
+  -- Use configured compiler variable to allow Windows toolchains to choose the proper C compiler
+  buildO oFile srcJob weakArgs #["-fPIC"] compiler getLeanTrace
 
-extern_lib libsqliteffi pkg := do
+extern_lib libsqlite pkg := do
   -- clone the git repositories we need so we can build them later
   let sqliteDir ← (← sqliteDir.fetch).await
 
@@ -94,14 +90,16 @@ extern_lib libsqliteffi pkg := do
 
   let ffiO ← sqliteffi.o.fetch
   let name := nameToStaticLib "sqliteffi"
-  buildStaticLib (pkg.sharedLibDir / name) #[ffiO]
+  buildStaticLib (pkg.staticLibDir / name) #[ffiO]
 
 @[default_target]
 lean_exe sqlite where
   root := `Main
+  moreLinkObjs := #[libsqlite]
   moreLinkArgs := #["-lsqlite3"]
 
 lean_exe Tests.Sqlite where
+  moreLinkObjs := #[libsqlite]
   moreLinkArgs := #["-lsqlite3"]
 
 require LSpec from git
