@@ -71,7 +71,8 @@ target sqliteffi.o pkg : FilePath := do
   let oFile := pkg.buildDir / "native" / "sqliteffi.o"
   let srcJob ← inputTextFile <| pkg.dir / "native" / "ffi.c"
   -- Use Lean include dir; avoid hardcoded Nix paths which don't exist on Windows
-  let weakArgs := #["-I", (← getLeanIncludeDir).toString]
+  let libDir : FilePath ← (← sqliteDir.fetch).await
+  let weakArgs := #["-I", (← getLeanIncludeDir).toString, "-I", libDir.toString]
   -- Use configured compiler variable to allow Windows toolchains to choose the proper C compiler
   buildO oFile srcJob weakArgs #["-fPIC"] compiler getLeanTrace
 
