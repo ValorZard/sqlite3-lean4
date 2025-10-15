@@ -2,3 +2,4 @@
 /.lake
 /.direnv
 test.sqlite3
+/vendor
