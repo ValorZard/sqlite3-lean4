@@ -35,6 +35,7 @@ lean_exe sqlite where
   root := `Main
   moreLinkObjs := #[libsqlite]
 
+@[test_driver]
 lean_exe Tests.Sqlite where
   moreLinkObjs := #[libsqlite]
 
