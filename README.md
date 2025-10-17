@@ -1,4 +1,3 @@
 # Sqlite Lean4
 
-You will need some form of C compiler on your computer to compile SQLite and the FFI bindings.
-Currently, this project expects Clang/LLVM to be installed on your computer
+Uses the (amalgamation)[https://sqlite.org/amalgamation.html] of (SQLite)[https://sqlite.org/download.html], which bundles all of SQLite into one .c file for easy compilation.
