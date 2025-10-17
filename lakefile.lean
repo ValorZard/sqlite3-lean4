@@ -5,7 +5,7 @@ package sqlite
 
 lean_lib Sqlite
 
-def compiler := "gcc" -- TODO: at some point, we should figure out a better way to set the C compiler
+def compiler := "cc" -- TODO: at some point, we should figure out a better way to set the C compiler
 
 target sqlite.o pkg : FilePath := do
   let oFile := pkg.dir / "native" / "sqlite3.o"
