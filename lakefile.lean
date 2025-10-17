@@ -39,4 +39,4 @@ lean_exe Tests.Sqlite where
   moreLinkObjs := #[libsqlite]
 
 require LSpec from git
-  "https://github.com/argumentcomputer/lspec/" @ "8a51034d049c6a229d88dd62f490778a377eec06"
+  "https://github.com/argumentcomputer/lspec/" @ "1fc461a9b83eeb68da34df72cec2ef1994e906cb"
