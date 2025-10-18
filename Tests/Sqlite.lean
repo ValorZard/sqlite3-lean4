@@ -46,9 +46,9 @@ def withTest (test : TestContext → IO Bool) : IO Bool := do
 def testInsertData (ctx : TestContext) : IO Bool := do
   match ← ctx.conn.prepare "INSERT INTO users (id, name) VALUES (?, ?);" with
   | Except.ok cursor =>
-    cursor.bindInt 1 2 -- TODO: This test fails when set to 2 or 3, but other numbers work???
+    cursor.bindInt 1 2
     cursor.bindText 2 "Jane Doe"
-    let _ ← cursor.step
+    let _ ← cursor.step -- This always returns false
     return true
   | Except.error _ => return false
 

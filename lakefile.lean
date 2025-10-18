@@ -13,7 +13,6 @@ target sqlite.o pkg : FilePath := do
   let sqliteHeaders := pkg.dir / "native"
   -- Ensure that both sqlite3.h and sqlite3ext.h are available during compilation
   let weakArgs := #["-I", sqliteHeaders.toString]
-  -- Use configured compiler variable to allow Windows toolchains to choose the proper C compiler
   buildO oFile srcJob weakArgs #["-fPIC"] compiler getLeanTrace
 
 target sqliteffi.o pkg : FilePath := do
@@ -21,7 +20,6 @@ target sqliteffi.o pkg : FilePath := do
   let srcJob ← inputTextFile <| pkg.dir / "native" / "sqliteffi.c"
   let sqliteHeaders := pkg.dir / "native"
   let weakArgs := #["-I", (← getLeanIncludeDir).toString, "-I", sqliteHeaders.toString]
-  -- Use configured compiler variable to allow Windows toolchains to choose the proper C compiler
   buildO oFile srcJob weakArgs #["-fPIC"] compiler getLeanTrace
 
 extern_lib libsqlite pkg := do
