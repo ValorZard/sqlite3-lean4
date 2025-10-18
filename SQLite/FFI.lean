@@ -1,4 +1,4 @@
-namespace Sqlite.FFI
+namespace SQLite.FFI
 namespace Constants
 
 def SQLITE_CONFIG_SINGLETHREAD        : UInt32 := 1
@@ -143,4 +143,4 @@ def connect (s : String) (flags : UInt32) : IO Connection := do
          conn := rawconn,
          prepare := (sqlitePrepareWrap rawconn ·) }
 
-end Sqlite.FFI
+end SQLite.FFI

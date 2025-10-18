@@ -3,7 +3,7 @@ open System Lake DSL
 
 package sqlite
 
-lean_lib Sqlite
+lean_lib SQLite
 
 def compiler := (·.getD "cc") <$> IO.getEnv "CC"
 
@@ -35,7 +35,7 @@ lean_exe sqlite where
   moreLinkArgs := #["-Wl,--unresolved-symbols=ignore-all"] -- TODO: Very gross hack
 
 @[test_driver]
-lean_exe Tests.Sqlite where
+lean_exe Tests.SQLite where
   moreLinkObjs := #[libsqlite]
   moreLinkArgs := #["-Wl,--unresolved-symbols=ignore-all"] -- Same as above
 
